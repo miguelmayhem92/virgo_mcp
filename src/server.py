@@ -30,5 +30,26 @@ def task_execution_prompt() -> str:
         
         Use the tasks://all resource to access the complete task list."""
 
+@mcp.prompt()
+def sirius_analysis_prompt(data_text:str):
+    return f"""You are a data analyst. Analyze the daily probability data below.
+        Each line gives the probability that the target goes UP and DOWN on a given date.
+        "Spread" means (down - up) in percentage points. A positive spread means down is more likely than up.
+
+        DATA (newest first):
+        {data_text}
+
+        Answer these three questions using only the data above. Show the numbers you used.
+
+        1. Is the spread reducing?
+        Compare the spread (down - up) on the most recent date with the spread about one week earlier (2026-October-08 or nearest) and with the spread at the start of the data. Say "reducing", "widening", or "stable" (stable = change under 1 percentage point), then give the numbers.
+
+        2. Are the up or down probabilities going up or down?
+        For each of UP and DOWN, compare the latest value with the 5-day average of the previous 5 days. Say "rising", "falling", or "flat" for each, with the numbers.
+
+        3. Is there any jump to pay attention to?
+        Compute the day-to-day change for UP and DOWN. Flag any change of 3 percentage points or more in either direction. List each flagged date, the metric, and the size of the change. If nothing crosses 3 points, say "No significant jumps."
+
+        Format the answer with the headings "1. Spread", "2. Trend", and "3. Jumps". Keep each section under 4 sentences. Do not add information that is not in the data."""
 
 app = mcp.streamable_http_app()
