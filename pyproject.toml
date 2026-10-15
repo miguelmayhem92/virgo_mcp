@@ -1,0 +1,25 @@
+[project]
+name = "poc_mcp"
+version = "0.1.0"
+description = "poc for mcp server with python"
+authors = [
+    {name = "miguel",email = "miguelmayhem92@gmail.com"}
+]
+requires-python = ">=3.11"
+dependencies = [
+    "starlette (>=1.7.0,<2.0.0)",
+    "mcp[cli] (>=2.2.0,<3.0.0)",
+    "uv (>=0.12.21,<0.13.0)",
+    "boto3 (>=1.43.114,<2.0.0)",
+    "pandas (<3.0.0)"
+]
+
+[tool.poetry]
+package-mode = true
+
+[tool.uv]
+package = false
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
