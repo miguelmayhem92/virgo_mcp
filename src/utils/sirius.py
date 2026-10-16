@@ -1,10 +1,9 @@
-import pandas as pd
-import boto3
 import os
 from datetime import datetime
 import requests
 import json
 
+import pandas as pd
 from dotenv import load_dotenv
 
 
@@ -46,8 +45,8 @@ class AssetReader:
     @staticmethod
     def launch_sirius_lambda(asset):
         payload = {'asset': asset}
-        url = os.getenv("edge_models_api_url")
-        api_key = os.getenv("api_key")
+        url = os.getenv("EDGE_SIRIUS_URL")
+        api_key = os.getenv("URL_KEY")
         if not url or not api_key:
             raise Exception("error geting creds for launching lambda")
         

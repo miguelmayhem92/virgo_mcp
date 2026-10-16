@@ -1,36 +1,37 @@
-FROM python:3.11-slim as builder 
+# ---------- builder: resolve and install locked dependencies ----------
+FROM python:3.11-slim AS builder
 
-ARG ROOT="modules"
-ARG MODULE="momentum"
-ARG SERVICE="ranking"
-ARG COMMON="common"
-ARG TESTS="test"
-# set to launch remote container
-ARG SECRET_NAME  
+WORKDIR /build
 
-ENV MODULE_PATH="${ROOT}/${MODULE}"
-ENV COMMON_PATH="${ROOT}/${COMMON}"
-ENV SERVICE_PATH="${ROOT}/${MODULE}/${SERVICE}"
-ENV TEST_PATH="${ROOT}/${MODULE}/${SERVICE}/${TESTS}"
+RUN pip install --no-cache-dir --upgrade pip poetry poetry-plugin-export
 
-ARG AWS_ACCESS_KEY_ID
-ARG AWS_SECRET_ACCESS_KEY
-ARG AWS_DEFAULT_REGION
-ENV SECRET_NAME=${SECRET_NAME}
-
-ENV AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-ENV AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-ENV AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
-
-WORKDIR /app
-
-COPY ./${MODULE}/pyproject.toml .
-
+COPY pyproject.toml ./
 RUN pip install --upgrade pip
 RUN pip install poetry poetry-plugin-export
 
-RUN poetry export -f requirements.txt --only main --without-hashes -o requirements.txt
-RUN pip install --no-cache-dir \
-    --no-deps \
-    -r requirements.txt --target=/app/asset-layer/modules
+RUN poetry export -f requirements.txt --only main --without-hashes -o requirements.txt \
+ && pip install --no-cache-dir -r requirements.txt --target=/install
 
+# ---------- runtime ----------
+FROM python:3.11-slim
+
+ARG MODULE=src
+
+# Lambda Web Adapter: lets a normal HTTP server (uvicorn) run on Lambda
+COPY --from=public.ecr.aws/awsguru/aws-lambda-adapter:0.9.1 /lambda-adapter /opt/extensions/lambda-adapter
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/opt/deps:/var/task \
+    PORT=8000 \
+    AWS_LWA_PORT=8000
+
+WORKDIR /var/task
+
+COPY --from=builder /install /opt/deps
+COPY ${MODULE} ./${MODULE}
+
+EXPOSE 8000
+
+# Adjust "src.server:app" to your module path and ASGI app object.
+# For FastMCP, the ASGI app is typically mcp.streamable_http_app().
+CMD ["python", "-m", "uvicorn", "src.server:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -1,0 +1,27 @@
+services:
+  virgo_mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+        - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+        - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+        - EDGE_SIRIUS_URL=${EDGE_SIRIUS_URL}
+        - URL_KEY=${URL_KEY}
+        - BUCKET=${BUCKET}
+    env_file:
+    - .env
+    image: virgo_mcp:latest
+    container_name: virgo_mcp
+    ports:
+      - "8000:8000"
+    environment:
+      PYTHONUNBUFFERED: "1"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/mcp', timeout=5) else 1)"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
