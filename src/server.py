@@ -1,22 +1,30 @@
+import os
 from mcp.server import MCPServer
-from mcp.server.mcpserver.exceptions import ToolError
+# from mcp.server.mcpserver.exceptions import ToolError
 
+from src.utils.sirius import AssetReader
+
+
+bucket = os.getenv("BUCKET")
 
 mcp = MCPServer("virgo_mcp")
 
 @mcp.tool()
 def launch_asset_lambda_execution(asset:str):
-    """
-    execute sirius edge lambda
-    """
-    pass
+    ar = AssetReader(bucket)
+    execution_result = ar.launch_sirius_lambda(asset)
+    return execution_result
 
-@mcp.resource("tasks://read_asset_sirius")
+@mcp.resource("tasks://read_asset_sirius/{asset}")
 def read_asset_sirius(asset:str)->str:
     """
     read a sirius df and returns last rows of hedge columns as text
     """
-    pass
+    ar = AssetReader(bucket)
+    df = ar.sirius_read_csv(asset)
+    recordings = ar.produce_text(df, asset)
+    averages = ar.mean_probs_to_string(df, asset)
+    return recordings + "\n" + averages
 
 
 @mcp.prompt()

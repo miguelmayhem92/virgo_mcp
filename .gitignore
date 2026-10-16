@@ -2,4 +2,5 @@
 .vscode
 .opencode
 .pycache/
+__pycache__/
 poetry.lock
