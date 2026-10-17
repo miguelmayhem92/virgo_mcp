@@ -1,0 +1,9 @@
+terraform validate    # to check syntax and invalid value or check sanity tests
+terraform fmt   # fix format
+terraform init  # set up providers and source .env
+terraform plan  # list of changes 
+terraform show may_plan # give all info in state file, show readable plan
+terraform plan -destroy  # remove everythin
+terraform apply # create resources
+
+
