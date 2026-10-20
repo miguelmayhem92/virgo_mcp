@@ -12,7 +12,7 @@ services:
         - BUCKET=${BUCKET}
     env_file:
     - .env
-    image: virgo_mcp:latest
+    image: virgo_mcp:virgo_mcp.latest
     container_name: virgo_mcp
     ports:
       - "8000:8000"
